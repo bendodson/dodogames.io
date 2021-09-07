@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=0.7"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<meta name="generator" content="Jekyll v3.8.7" />
+<meta property="og:title" content="Path generation" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Creating a randomised path from A to B along a hex grid (and then doing it again so it works efficiently) 😂" />
+<meta property="og:description" content="Creating a randomised path from A to B along a hex grid (and then doing it again so it works efficiently) 😂" />
+<link rel="canonical" href="http://localhost:4000/devlog/path-generation/" />
+<meta property="og:url" content="http://localhost:4000/devlog/path-generation/" />
+<meta property="og:site_name" content="Dodo Games" />
+<meta property="og:image" content="https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/path-generation-40-hexes.jpg" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-08-24T12:30:00+01:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/path-generation-40-hexes.jpg" />
+<meta property="twitter:title" content="Path generation" />
+<meta name="twitter:site" content="@bendodson" />
+<script type="application/ld+json">
+{"dateModified":"2021-08-24T12:30:00+01:00","datePublished":"2021-08-24T12:30:00+01:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/devlog/path-generation/"},"url":"http://localhost:4000/devlog/path-generation/","image":"https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/path-generation-40-hexes.jpg","description":"Creating a randomised path from A to B along a hex grid (and then doing it again so it works efficiently) 😂","headline":"Path generation","@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<title>Path generation — Dodo Games</title>
+  <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Dodo Games" /><link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+</head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title-container" rel="author" href="/">
+      <span class="site-title" >Dodo Games</span>
+      <span class="site-subtitle">Indie games for iPhone, iPad, and Apple TV</span>
+    </a>
+
+    <nav class="site-nav">
+      <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+      <label for="nav-trigger">
+        <span class="menu-icon">
+          <svg viewBox="0 0 18 15" width="18px" height="15px">
+            <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+          </svg>
+        </span>
+      </label>
+
+      <div class="trigger">
+        <a class="page-link" href="/games/">Games</a>
+        <a class="page-link" href="/devlog/">Development Log</a>
+        <a class="page-link" href="/about/">About</a>
+      </div>
+    </nav>
+
+  </div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Path generation</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2021-08-24T12:30:00+01:00" itemprop="datePublished">
+        24th Aug 2021
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>One of the key parts of <em>The Forest</em> is the gradual exploration of the dense woods that make up the game board. Typically your character will start in a clearing and then you’ll be able to navigate along roads and paths to the next adjacent hex. The first step (after <a href="/devlog/building-a-hex-grid-with-spritekit/">generating the background</a>) is to choose where the player starts, work out where the player needs to get to, and then create a random path from point A to point B. This is called “path generation” and is something I’ve been focused on for the last week or so.</p>
+
+<p>To begin with, I have a scenario JSON file which will dictate the fixed elements of the current scenario. It looks something like this presently:</p>
+
+<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
+    </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"In the beginning"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"map"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"columns"</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"rows"</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"start"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"environment"</span><span class="p">:</span><span class="w"> </span><span class="s2">"clearing"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"distanceFromBoardEdge"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"finish"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"minimumDistanceFromStart"</span><span class="p">:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"maximumDistanceFromStart"</span><span class="p">:</span><span class="w"> </span><span class="mi">9</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<p>We’re most interested in the map section which defines the basic size of the map (8 by 8) and gives us a rough indication of where to start and finish; in this case, we’re going to place a “clearing” tile somewhere on the edge of the grid and have the finish be 6 to 9 hexes away from the start. This sense of randomness should mean that scenario’s can be replayed and still feel fresh; there will be story beats that are consistent but the random layout and random encounters should keep it interesting.</p>
+
+<p>In my first iteration of the path finding code, I thought the easiest solution would be to pick my random starting hex, pick the distance (if there is a min/max), and then generate every single possible route before picking one at random. Doing this is relatively straightforward:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kd">func</span> <span class="nf">possibleRoutesToVictory</span><span class="p">(</span><span class="n">from</span> <span class="nv">start</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Set</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">distance</span> <span class="o">=</span> <span class="kt">Int</span><span class="o">.</span><span class="nf">random</span><span class="p">(</span><span class="nv">in</span><span class="p">:</span> <span class="n">finish</span><span class="o">.</span><span class="n">minimumDistanceFromStart</span><span class="o">...</span><span class="n">finish</span><span class="o">.</span><span class="n">maximumDistanceFromStart</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">var</span> <span class="nv">routes</span> <span class="o">=</span> <span class="kt">Set</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span><span class="p">()</span>
+    <span class="nf">enlargeRoute</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nv">routeDistance</span><span class="p">:</span> <span class="n">distance</span><span class="p">,</span> <span class="nv">routes</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">routes</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">routes</span>
+<span class="p">}</span>
+
+<span class="kd">private</span> <span class="kd">func</span> <span class="nf">enlargeRoute</span><span class="p">(</span><span class="n">_</span> <span class="nv">route</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">routeDistance</span><span class="p">:</span> <span class="kt">Int</span><span class="p">,</span> <span class="nv">routes</span><span class="p">:</span> <span class="k">inout</span> <span class="kt">Set</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">references</span> <span class="o">=</span> <span class="n">route</span><span class="o">.</span><span class="nf">components</span><span class="p">(</span><span class="nv">separatedBy</span><span class="p">:</span> <span class="s">"-"</span><span class="p">)</span>
+    <span class="k">guard</span> <span class="n">references</span><span class="o">.</span><span class="n">count</span> <span class="o">&lt;</span> <span class="n">routeDistance</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">routes</span><span class="o">.</span><span class="nf">insert</span><span class="p">(</span><span class="n">route</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="k">guard</span> <span class="k">let</span> <span class="nv">reference</span> <span class="o">=</span> <span class="n">references</span><span class="o">.</span><span class="n">last</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nf">fatalError</span><span class="p">(</span><span class="s">"Could not get last reference"</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="k">guard</span> <span class="k">let</span> <span class="nv">maxColumn</span> <span class="o">=</span> <span class="n">columns</span><span class="o">.</span><span class="nf">toAlphabet</span><span class="p">(),</span> <span class="k">let</span> <span class="nv">gridReference</span> <span class="o">=</span> <span class="n">reference</span><span class="o">.</span><span class="nf">toGridReference</span><span class="p">()</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nf">fatalError</span><span class="p">(</span><span class="s">"Could not create maxColumn or gridReference"</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="k">let</span> <span class="nv">neighbours</span> <span class="o">=</span> <span class="n">gridReference</span><span class="o">.</span><span class="nf">neighbours</span><span class="p">(</span><span class="nv">maxColumn</span><span class="p">:</span> <span class="n">maxColumn</span><span class="p">,</span> <span class="nv">maxRow</span><span class="p">:</span> <span class="n">rows</span><span class="p">)</span><span class="o">.</span><span class="nf">filter</span><span class="p">({</span><span class="o">!</span><span class="n">references</span><span class="o">.</span><span class="nf">contains</span><span class="p">(</span><span class="nv">$0</span><span class="p">)})</span>
+    <span class="k">for</span> <span class="n">neighbour</span> <span class="k">in</span> <span class="n">neighbours</span> <span class="p">{</span>
+        <span class="nf">enlargeRoute</span><span class="p">(</span><span class="s">"</span><span class="se">\(</span><span class="n">route</span><span class="se">)</span><span class="s">-</span><span class="se">\(</span><span class="n">neighbour</span><span class="se">)</span><span class="s">"</span><span class="p">,</span> <span class="nv">routeDistance</span><span class="p">:</span> <span class="n">routeDistance</span><span class="p">,</span> <span class="nv">routes</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">routes</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Our <code class="highlighter-rouge">possibleRoutesToVictory</code> function is given the starting hex position, picks the length of the route, and then creates an empty <code class="highlighter-rouge">Set</code> that can hold strings. The strings in this set will look something like <em>A1-B2-B3-C3-C2-C1-D1</em> and denote the grid reference of the hexes the route proceeds through; this set is returned at the end of the method so we can then pick a route to render.</p>
+
+<p>The main part of the process is calling a recursive function named <code class="highlighter-rouge">enlargeRoute</code> that takes a route string, distance, and our routes set. It separates the passed route into grid references and checks to see if the count is equal to the hex distance we’re looking for. If it is, the string is put into the routes set as a valid path and the method exited. If not, we check all of the neighbours<sup id="fnref:neighbours"><a href="#fn:neighbours" class="footnote">1</a></sup> of the last hex in the route and run this method again on every hex that isn’t already present in the route thus potentially spawning up to 6 new routes. In this way, we gradually increase the length of the route and create new routes until we’ve gone through every single possible iteration.</p>
+
+<p>Once completed, we have a set of route strings and we can pick one at random to use as our route. For a journey with a distance of 6 hexes this translates into just over 4000 choices for us to choose from:</p>
+
+<div class="gofigure">
+    <img src="https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/forest-simple-pathing.gif" alt="A few of the ~4000 six-hex routes that are generated in around 0.1 seconds" />
+    <figure>A few of the ~4000 six-hex routes that are generated in around 0.1 seconds.</figure>
+</div>
+
+<p>This seems great in theory but it quickly unravelled when I tried longer paths. For example, a distance of 10 hexes turned into 788,550 possible routes taking 7 seconds to generate. That’s not going to work. 😂</p>
+
+<p>My first thought is that things are obviously quicker when we’re working in smaller chunks as there are far less choices. I thought I could maybe break the routes into pieces by turning a 12 hex route into three sets of 4 hex routes. That could potentially lead to a lot of dead ends though as it would be easy for the hexes to get trapped against a wall or corner which would then mean the routes could never complete (and whilst I could mitigate that by regenerating the initial 4 hex seeds and starting again it was getting a bit convoluted).</p>
+
+<p>Instead, the final version was painfully simple. In the code above I’m generating every single route but what if I just stopped inserting into the set after 1 route is generated? With the current code that would mean the path would always be the same as the neighbours are tested in the same order every time but randomising that would lead to the result I was looking for.</p>
+
+<div class="gofigure">
+    <img src="https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/path-generation-fix.png" alt="A diff showing the simple fix for generating a single path" />
+    <figure>A diff showing the simple fix for generating a single path.</figure>
+</div>
+
+<p>All I needed to do was shuffle the array of hex neighbours that are returned and then exit the function once a single route is found. This leads to paths being generated in a mere 2 milliseconds, even when they are 40 hexes long.</p>
+
+<div class="gofigure">
+    <img src="https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/path-generation-40-hexes.jpg" alt="A random forty-hex route generated in 2 milliseconds" />
+    <figure>A random forty-hex route generated in 2 milliseconds.</figure>
+</div>
+
+<p>The end result works well as it runs until it finds a valid route; if the random nature of the first route ends in a spiral that means we can’t get to the full length of the route then it doesn’t matter as it will keep iterating through every choice until a single route is found, then stop to avoid wasting further cycles on a solved problem.</p>
+
+<p>With this now working as intended, the next step is to start drawing a path on top of the hex tiles before beginning the process of adding some dead ends and shortcuts throughout the map.</p>
+
+<div class="footnotes">
+  <ol>
+    <li id="fn:neighbours">
+      <p>The calculation for the neighbours of a hex is fairly simple translating the current grid reference and then determining what the 6 hexes around it will be. It needs a maxColumn and maxRow as we don’t want to return hexes that are on the outside of the bounds of the board. We already know not go below 0,0 so we don’t require a minimum. <a href="#fnref:neighbours" class="reversefootnote">&#8617;&#65038;</a></p>
+    </li>
+  </ol>
+</div>
+
+  </div>
+
+  <a class="u-url" href="/devlog/path-generation/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Twitter</li>
+          <li><a href="https://twitter.com/bendodson">@BenDodson</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li class="p-name">Email</li>
+          <li><a class="u-email" href="mailto:ben@bendodson.com">ben@bendodson.com</a></li>
+        </ul>
+      </div>
+      
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
+<loc>http://localhost:4000/devlog/building-a-hex-grid-with-SpriteKit/</loc>
+<lastmod>2021-05-06T12:30:00+01:00</lastmod>
+</url>
+<url>
+<loc>http://localhost:4000/devlog/sklightnode-and-normal-maps/</loc>
+<lastmod>2021-06-02T12:30:00+01:00</lastmod>
+</url>
+<url>
+<loc>http://localhost:4000/devlog/path-generation/</loc>
+<lastmod>2021-08-24T12:30:00+01:00</lastmod>
+</url>
+<url>
+<loc>http://localhost:4000/about/</loc>
+</url>
+<url>
+<loc>http://localhost:4000/devlog/</loc>
+</url>
+<url>
+<loc>http://localhost:4000/games/</loc>
+</url>
+</urlset>

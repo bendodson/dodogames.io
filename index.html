@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=0.7"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<meta name="generator" content="Jekyll v3.8.7" />
+<meta property="og:title" content="Dodo Games" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Indie games for iPhone, iPad, and Apple TV" />
+<meta property="og:description" content="Indie games for iPhone, iPad, and Apple TV" />
+<link rel="canonical" href="http://localhost:4000/" />
+<meta property="og:url" content="http://localhost:4000/" />
+<meta property="og:site_name" content="Dodo Games" />
+<meta property="og:image" content="https://theplainswalker.s3.amazonaws.com/posts/default-image.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://theplainswalker.s3.amazonaws.com/posts/default-image.jpg" />
+<meta property="twitter:title" content="Dodo Games" />
+<meta name="twitter:site" content="@bendodson" />
+<script type="application/ld+json">
+{"url":"http://localhost:4000/","name":"Dodo Games","image":"https://theplainswalker.s3.amazonaws.com/posts/default-image.jpg","description":"Indie games for iPhone, iPad, and Apple TV","headline":"Dodo Games","@type":"WebSite","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<title>Dodo Games</title>
+  <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Dodo Games" /><link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+</head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title-container" rel="author" href="/">
+      <span class="site-title" >Dodo Games</span>
+      <span class="site-subtitle">Indie games for iPhone, iPad, and Apple TV</span>
+    </a>
+
+    <nav class="site-nav">
+      <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+      <label for="nav-trigger">
+        <span class="menu-icon">
+          <svg viewBox="0 0 18 15" width="18px" height="15px">
+            <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+          </svg>
+        </span>
+      </label>
+
+      <div class="trigger">
+        <a class="page-link" href="/games/">Games</a>
+        <a class="page-link" href="/devlog/">Development Log</a>
+        <a class="page-link" href="/about/">About</a>
+      </div>
+    </nav>
+
+  </div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <div class="home">
+  
+    <article>
+      <span class="post-meta">24th Aug 2021</span>
+      <h3>
+        
+        
+        <a class="post-link" href="/devlog/path-generation/">
+          Path generation
+        </a>
+      </h3>
+      <p>One of the key parts of <em>The Forest</em> is the gradual exploration of the dense woods that make up the game board. Typically your character will start in a clearing and then you’ll be able to navigate along roads and paths to the next adjacent hex. The first step (after <a href="/devlog/building-a-hex-grid-with-spritekit/">generating the background</a>) is to choose where the player starts, work out where the player needs to get to, and then create a random path from point A to point B. This is called “path generation” and is something I’ve been focused on for the last week or so.</p>
+
+<p>To begin with, I have a scenario JSON file which will dictate the fixed elements of the current scenario. It looks something like this presently:</p>
+
+<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
+    </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"In the beginning"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"map"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"columns"</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"rows"</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"start"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"environment"</span><span class="p">:</span><span class="w"> </span><span class="s2">"clearing"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"distanceFromBoardEdge"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"finish"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"minimumDistanceFromStart"</span><span class="p">:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"maximumDistanceFromStart"</span><span class="p">:</span><span class="w"> </span><span class="mi">9</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<p>We’re most interested in the map section which defines the basic size of the map (8 by 8) and gives us a rough indication of where to start and finish; in this case, we’re going to place a “clearing” tile somewhere on the edge of the grid and have the finish be 6 to 9 hexes away from the start. This sense of randomness should mean that scenario’s can be replayed and still feel fresh; there will be story beats that are consistent but the random layout and random encounters should keep it interesting.</p>
+
+<p>In my first iteration of the path finding code, I thought the easiest solution would be to pick my random starting hex, pick the distance (if there is a min/max), and then generate every single possible route before picking one at random. Doing this is relatively straightforward:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kd">func</span> <span class="nf">possibleRoutesToVictory</span><span class="p">(</span><span class="n">from</span> <span class="nv">start</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Set</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">distance</span> <span class="o">=</span> <span class="kt">Int</span><span class="o">.</span><span class="nf">random</span><span class="p">(</span><span class="nv">in</span><span class="p">:</span> <span class="n">finish</span><span class="o">.</span><span class="n">minimumDistanceFromStart</span><span class="o">...</span><span class="n">finish</span><span class="o">.</span><span class="n">maximumDistanceFromStart</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">var</span> <span class="nv">routes</span> <span class="o">=</span> <span class="kt">Set</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span><span class="p">()</span>
+    <span class="nf">enlargeRoute</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nv">routeDistance</span><span class="p">:</span> <span class="n">distance</span><span class="p">,</span> <span class="nv">routes</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">routes</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">routes</span>
+<span class="p">}</span>
+
+<span class="kd">private</span> <span class="kd">func</span> <span class="nf">enlargeRoute</span><span class="p">(</span><span class="n">_</span> <span class="nv">route</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">routeDistance</span><span class="p">:</span> <span class="kt">Int</span><span class="p">,</span> <span class="nv">routes</span><span class="p">:</span> <span class="k">inout</span> <span class="kt">Set</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">references</span> <span class="o">=</span> <span class="n">route</span><span class="o">.</span><span class="nf">components</span><span class="p">(</span><span class="nv">separatedBy</span><span class="p">:</span> <span class="s">"-"</span><span class="p">)</span>
+    <span class="k">guard</span> <span class="n">references</span><span class="o">.</span><span class="n">count</span> <span class="o">&lt;</span> <span class="n">routeDistance</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">routes</span><span class="o">.</span><span class="nf">insert</span><span class="p">(</span><span class="n">route</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="k">guard</span> <span class="k">let</span> <span class="nv">reference</span> <span class="o">=</span> <span class="n">references</span><span class="o">.</span><span class="n">last</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nf">fatalError</span><span class="p">(</span><span class="s">"Could not get last reference"</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="k">guard</span> <span class="k">let</span> <span class="nv">maxColumn</span> <span class="o">=</span> <span class="n">columns</span><span class="o">.</span><span class="nf">toAlphabet</span><span class="p">(),</span> <span class="k">let</span> <span class="nv">gridReference</span> <span class="o">=</span> <span class="n">reference</span><span class="o">.</span><span class="nf">toGridReference</span><span class="p">()</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nf">fatalError</span><span class="p">(</span><span class="s">"Could not create maxColumn or gridReference"</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="k">let</span> <span class="nv">neighbours</span> <span class="o">=</span> <span class="n">gridReference</span><span class="o">.</span><span class="nf">neighbours</span><span class="p">(</span><span class="nv">maxColumn</span><span class="p">:</span> <span class="n">maxColumn</span><span class="p">,</span> <span class="nv">maxRow</span><span class="p">:</span> <span class="n">rows</span><span class="p">)</span><span class="o">.</span><span class="nf">filter</span><span class="p">({</span><span class="o">!</span><span class="n">references</span><span class="o">.</span><span class="nf">contains</span><span class="p">(</span><span class="nv">$0</span><span class="p">)})</span>
+    <span class="k">for</span> <span class="n">neighbour</span> <span class="k">in</span> <span class="n">neighbours</span> <span class="p">{</span>
+        <span class="nf">enlargeRoute</span><span class="p">(</span><span class="s">"</span><span class="se">\(</span><span class="n">route</span><span class="se">)</span><span class="s">-</span><span class="se">\(</span><span class="n">neighbour</span><span class="se">)</span><span class="s">"</span><span class="p">,</span> <span class="nv">routeDistance</span><span class="p">:</span> <span class="n">routeDistance</span><span class="p">,</span> <span class="nv">routes</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">routes</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Our <code class="highlighter-rouge">possibleRoutesToVictory</code> function is given the starting hex position, picks the length of the route, and then creates an empty <code class="highlighter-rouge">Set</code> that can hold strings. The strings in this set will look something like <em>A1-B2-B3-C3-C2-C1-D1</em> and denote the grid reference of the hexes the route proceeds through; this set is returned at the end of the method so we can then pick a route to render.</p>
+
+<p>The main part of the process is calling a recursive function named <code class="highlighter-rouge">enlargeRoute</code> that takes a route string, distance, and our routes set. It separates the passed route into grid references and checks to see if the count is equal to the hex distance we’re looking for. If it is, the string is put into the routes set as a valid path and the method exited. If not, we check all of the neighbours<sup id="fnref:neighbours"><a href="#fn:neighbours" class="footnote">1</a></sup> of the last hex in the route and run this method again on every hex that isn’t already present in the route thus potentially spawning up to 6 new routes. In this way, we gradually increase the length of the route and create new routes until we’ve gone through every single possible iteration.</p>
+
+<p>Once completed, we have a set of route strings and we can pick one at random to use as our route. For a journey with a distance of 6 hexes this translates into just over 4000 choices for us to choose from:</p>
+
+<div class="gofigure">
+    <img src="https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/forest-simple-pathing.gif" alt="A few of the ~4000 six-hex routes that are generated in around 0.1 seconds" />
+    <figure>A few of the ~4000 six-hex routes that are generated in around 0.1 seconds.</figure>
+</div>
+
+<p>This seems great in theory but it quickly unravelled when I tried longer paths. For example, a distance of 10 hexes turned into 788,550 possible routes taking 7 seconds to generate. That’s not going to work. 😂</p>
+
+<p>My first thought is that things are obviously quicker when we’re working in smaller chunks as there are far less choices. I thought I could maybe break the routes into pieces by turning a 12 hex route into three sets of 4 hex routes. That could potentially lead to a lot of dead ends though as it would be easy for the hexes to get trapped against a wall or corner which would then mean the routes could never complete (and whilst I could mitigate that by regenerating the initial 4 hex seeds and starting again it was getting a bit convoluted).</p>
+
+<p>Instead, the final version was painfully simple. In the code above I’m generating every single route but what if I just stopped inserting into the set after 1 route is generated? With the current code that would mean the path would always be the same as the neighbours are tested in the same order every time but randomising that would lead to the result I was looking for.</p>
+
+<div class="gofigure">
+    <img src="https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/path-generation-fix.png" alt="A diff showing the simple fix for generating a single path" />
+    <figure>A diff showing the simple fix for generating a single path.</figure>
+</div>
+
+<p>All I needed to do was shuffle the array of hex neighbours that are returned and then exit the function once a single route is found. This leads to paths being generated in a mere 2 milliseconds, even when they are 40 hexes long.</p>
+
+<div class="gofigure">
+    <img src="https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/path-generation-40-hexes.jpg" alt="A random forty-hex route generated in 2 milliseconds" />
+    <figure>A random forty-hex route generated in 2 milliseconds.</figure>
+</div>
+
+<p>The end result works well as it runs until it finds a valid route; if the random nature of the first route ends in a spiral that means we can’t get to the full length of the route then it doesn’t matter as it will keep iterating through every choice until a single route is found, then stop to avoid wasting further cycles on a solved problem.</p>
+
+<p>With this now working as intended, the next step is to start drawing a path on top of the hex tiles before beginning the process of adding some dead ends and shortcuts throughout the map.</p>
+
+<div class="footnotes">
+  <ol>
+    <li id="fn:neighbours">
+      <p>The calculation for the neighbours of a hex is fairly simple translating the current grid reference and then determining what the 6 hexes around it will be. It needs a maxColumn and maxRow as we don’t want to return hexes that are on the outside of the bounds of the board. We already know not go below 0,0 so we don’t require a minimum. <a href="#fnref:neighbours" class="reversefootnote">&#8617;&#65038;</a></p>
+    </li>
+  </ol>
+</div>
+
+    </article>
+    <hr>
+  
+    <article>
+      <span class="post-meta">2nd Jun 2021</span>
+      <h3>
+        
+        
+        <a class="post-link" href="/devlog/sklightnode-and-normal-maps/">
+          SKLightNode, normal maps, and light scaling
+        </a>
+      </h3>
+      <p>One of my aims with <em>The Forest</em> is to make it feel like you are genuinely exploring a vast forest, the size and scale of which are unknowable to the player. When you’re stood in a dense forest in the real world, it’s hard to tell if you’re miles or metres away from the exit and that’s what I want to get across here. In the first instance, I’ve extended my <a href="/devlog/building-a-hex-grid-with-SpriteKit/">hex grid tile map</a> from last month by adding three additional tiles worth of depth around the main board. The reason for this is that the camera will be locked to the main board so if you scroll to the edge you won’t see the edge of the tiles but rather a continuation making it seem larger than it really is. The second element and the focus of today’s article is to introduce lighting, or more specifically, lack of lighting.</p>
+
+<p>To begin with, I’m going to alter my tile map by fully blending it with the grey colour I use for the background upon which all the tiles sit using <code class="highlighter-rouge">color</code> and <code class="highlighter-rouge">colorBlendFactor</code>. This will ensure the background tiles are dark whilst the revealed tiles look almost backlit:</p>
+
+<div class="gofigure">
+    <img src="https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/color-blending-tiles.jpg" alt="Darkening the surrounding tree tiles using a colour blend" />
+    <figure>Darkening the surrounding tree tiles using a colour blend.</figure>
+</div>
+
+<p>This already looks much better and immediately focusses attention on the currently active tiles. However, we can go a step further by taking advantage of light nodes to provide dynamic lighting. The first step is to set our tile map to use a <code class="highlighter-rouge">lightingBitMask</code>; you can use different bits so that certain lights can affect different nodes but for now we’re just setting it to <code class="highlighter-rouge">1</code>. Our map will now respect any light that is thrown at it. To do that, we need to add an <code class="highlighter-rouge">SKLightNode</code> to each of our revealed tiles:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">let</span> <span class="nv">node</span> <span class="o">=</span> <span class="kt">SKLightNode</span><span class="p">()</span>
+<span class="n">node</span><span class="o">.</span><span class="n">categoryBitMask</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="k">let</span> <span class="nv">colors</span><span class="p">:</span> <span class="p">[</span><span class="kt">UIColor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">.</span><span class="n">white</span><span class="p">,</span> <span class="o">.</span><span class="n">blue</span><span class="p">,</span> <span class="o">.</span><span class="n">orange</span><span class="p">]</span>
+<span class="n">node</span><span class="o">.</span><span class="n">lightColor</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="nf">randomElement</span><span class="p">()</span> <span class="p">??</span> <span class="o">.</span><span class="n">white</span>
+<span class="n">node</span><span class="o">.</span><span class="n">zPosition</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">node</span><span class="o">.</span><span class="n">falloff</span> <span class="o">=</span> <span class="mf">1.8</span>
+<span class="nf">addChild</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></code></pre></figure>
+
+<p>We create a light node and set its <code class="highlighter-rouge">categoryBitMask</code> to match the <code class="highlighter-rouge">lightingBitMask</code> of the nodes we want to illuminate (in this case the background tile map). Then we choose a colour, set our Z position so we’re on top of our map, choose the rate of decay for our light (known as falloff), and add it to our scene. An <code class="highlighter-rouge">SKLightNode</code> is itself invisible; it’s only purpose is to affect the light on other nodes. The end result looks pretty good:</p>
+
+<div class="gofigure">
+    <img src="https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/initial-sklightnode-implementation.jpg" alt="Ambient light from the revealed tiles illuminates some of the surrounding forest" />
+    <figure>Ambient light from the revealed tiles illuminates some of the surrounding forest.</figure>
+</div>
+
+<p>Whilst we haven’t changed the revealed tiles at all, they now stand out even more thanks to the background tiles slowly fading into blackness. If you were to scroll to the sides you’d eventually see nothing which is exactly how I wanted it. There is one more improvement that can be made and that’s to incorporate a certain amount of depth to the tiles. To do this, we use normal maps which are described as a “texture mapping technique used for faking the lighting of bumps and dents”<sup id="fnref:normalmapwiki"><a href="#fn:normalmapwiki" class="footnote">1</a></sup>. You can use an app like <a href="https://www.codeandweb.com/spriteilluminator">SpriteIlluminator</a> to take your 2D images and convert them into normal maps for use within SpriteKit and this is exactly what I did before realising that you can already do this for free with SpriteKit. 🤦🏻‍♂️</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kd">private</span> <span class="kd">func</span> <span class="nf">addNormalTextures</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">normalMaps</span> <span class="o">=</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">SKTexture</span><span class="p">]()</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..&lt;</span><span class="n">map</span><span class="o">.</span><span class="n">numberOfRows</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..&lt;</span><span class="n">map</span><span class="o">.</span><span class="n">numberOfColumns</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="nv">definition</span> <span class="o">=</span> <span class="n">map</span><span class="o">.</span><span class="nf">tileDefinition</span><span class="p">(</span><span class="nv">atColumn</span><span class="p">:</span> <span class="n">c</span><span class="p">,</span> <span class="nv">row</span><span class="p">:</span> <span class="n">r</span><span class="p">)</span>
+            <span class="k">guard</span> <span class="k">let</span> <span class="nv">name</span> <span class="o">=</span> <span class="n">definition</span><span class="p">?</span><span class="o">.</span><span class="n">name</span> <span class="k">else</span> <span class="p">{</span> <span class="k">continue</span> <span class="p">}</span>
+            <span class="k">if</span> <span class="n">normalMaps</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+                <span class="n">normalMaps</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">definition</span><span class="p">?</span><span class="o">.</span><span class="n">textures</span><span class="o">.</span><span class="n">first</span><span class="p">?</span><span class="o">.</span><span class="nf">generatingNormalMap</span><span class="p">(</span><span class="nv">withSmoothness</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="nv">contrast</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">)</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="k">let</span> <span class="nv">texture</span> <span class="o">=</span> <span class="n">normalMaps</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="p">{</span>
+                <span class="n">definition</span><span class="p">?</span><span class="o">.</span><span class="n">normalTextures</span> <span class="o">=</span> <span class="p">[</span><span class="n">texture</span><span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>To do this, we need a function to loop through each hex in the tile map. If we haven’t already generated a normal map for the current tile definition (which is one of ten different images I use for the tile map) then we go down to the texture and generate a map with a smoothness and a contrast of <code class="highlighter-rouge">0.2</code>, a figure I came to by trial and error<sup id="fnref:ymmvmap"><a href="#fn:ymmvmap" class="footnote">2</a></sup>.  Once done, the resulting map is stored in a temporary caching array before being added as a normal texture to the tile definition. Whilst apps like SpriteIlluminator give you a lot more freedom to create customised normal maps, the built in methods within SpriteKit are perfect for my needs and save me having to manually generate and store the maps for every texture I want to use. The end result is a vast improvement again:</p>
+
+<div class="gofigure">
+    <img src="https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/sklightnode-with-normal-maps.jpg" alt="Normal maps add some texture to the background tiles" />
+    <figure>Normal maps add some texture to the background tiles.</figure>
+</div>
+
+<p>The individual trees on the tile are now slightly embossed leading to extra shadow detail based on the light coming from the revealed tiles. I particularly like that the trees blending into the darkness can be seen by the light glinting from the tips whilst the rest is obscured.</p>
+
+<p>Whilst I’m happy with where things are now, a new issue appeared when I started to zoom in and out of my board using an <code class="highlighter-rouge">SKCameraNode</code>; the light does not scale. It turns out that the <a href="https://stackoverflow.com/a/44490984/205659">light nodes might be based on the <code class="highlighter-rouge">SKView</code> size</a> rather than that of the scene so the camera does not adjust them. My solution was to create a subclass of <code class="highlighter-rouge">SKLightNode</code> which reacts to the camera changing and adjusts its falloff accordingly:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kd">class</span> <span class="kt">ScalableLightNode</span><span class="p">:</span> <span class="kt">SKLightNode</span> <span class="p">{</span>
+    
+    <span class="k">var</span> <span class="nv">fixedFalloff</span><span class="p">:</span> <span class="kt">CGFloat</span>
+    
+    <span class="nf">init</span><span class="p">(</span><span class="nv">falloff</span><span class="p">:</span> <span class="kt">CGFloat</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">fixedFalloff</span> <span class="o">=</span> <span class="n">falloff</span>
+        <span class="k">super</span><span class="o">.</span><span class="nf">init</span><span class="p">()</span>
+        <span class="kt">NotificationCenter</span><span class="o">.</span><span class="k">default</span><span class="o">.</span><span class="nf">addObserver</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="nv">selector</span><span class="p">:</span> <span class="kd">#selector(</span><span class="nf">scaleDidChange</span><span class="kd">)</span><span class="p">,</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">BoardCameraMaster</span><span class="o">.</span><span class="kt">Notification</span><span class="o">.</span><span class="n">cameraScaleDidChange</span><span class="p">,</span> <span class="nv">object</span><span class="p">:</span> <span class="kc">nil</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="kd">required</span> <span class="nf">init</span><span class="p">?(</span><span class="n">coder</span> <span class="nv">aDecoder</span><span class="p">:</span> <span class="kt">NSCoder</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nf">fatalError</span><span class="p">(</span><span class="s">"init(coder:) has not been implemented"</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="kd">@objc</span> <span class="kd">func</span> <span class="nf">scaleDidChange</span><span class="p">(</span><span class="nv">notification</span><span class="p">:</span> <span class="kt">Notification</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">guard</span> <span class="k">let</span> <span class="nv">scale</span> <span class="o">=</span> <span class="n">notification</span><span class="o">.</span><span class="n">userInfo</span><span class="p">?[</span><span class="s">"scale"</span><span class="p">]</span> <span class="k">as?</span> <span class="kt">CGFloat</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nf">fatalError</span><span class="p">(</span><span class="s">"BoardCameraMaster.Notification.cameraScaleDidChange received with no scale"</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="nf">updateFalloff</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="kd">func</span> <span class="nf">updateFalloff</span><span class="p">(</span><span class="n">_</span> <span class="nv">scale</span><span class="p">:</span> <span class="kt">CGFloat</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">falloff</span> <span class="o">=</span> <span class="n">fixedFalloff</span> <span class="o">*</span> <span class="n">scale</span>
+    <span class="p">}</span>
+    
+<span class="p">}</span></code></pre></figure>
+
+<p>The node uses <code class="highlighter-rouge">NotificationCenter</code> to be alerted when the camera scale has changed and then updates its falloff based on the initially provided value multiplied by the scale. The end result is not perfect (the radius seems to shrink faster when you’re zoomed out) but it’s close enough for my needs:</p>
+
+<div class="gofigure">
+    <img src="https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/scalable-sklightnode.gif" alt="Scalable light node in action" />
+    <figure>Scalable light node in action. The low quality gif doesn't really showcase it as well as it could but you hopefully get the general idea.</figure>
+</div>
+
+<p>This would be a good place to stop but unfortunately there are two final wrinkles that are going to cause problems. Firstly, if I add a light node to every revealed tile then the amount of light gets compounded; this leads to the board being far too illuminated as more tiles get revealed. Secondly, there appears to be a limit to how many light nodes you can have; once exceeded, they just stop working. In short, having a light node on every tile is not going to work.</p>
+
+<p>To remedy this, I think I’m going to only have a light node on the tile in which the player character is currently standing. This will illuminate the bit of forest they are stood in but the path they have taken will still be “lit up” by virtue of being a revealed tile that isn’t affected by lighting; it just won’t cast an ambient glow into the surrounding trees. That will leave me with enough light nodes to do other interesting effects like showing a campfire in the distance or have flashes of lightning in a storm that light up the whole forest temporarily.</p>
+
+<p>That’s a job for another day though as I’m now keen to get on with the process of actually generating the paths that will turn this into something more closely resembling a game…</p>
+
+<div class="footnotes">
+  <ol>
+    <li id="fn:normalmapwiki">
+      <p>Wikipedia. <a href="https://en.wikipedia.org/wiki/Normal_mapping"><em>Normal Mapping</em></a> <a href="#fnref:normalmapwiki" class="reversefootnote">&#8617;&#65038;</a></p>
+    </li>
+    <li id="fn:ymmvmap">
+      <p>The precise numbers you want will vary depending on the effect you’re going for and the starting 2D image. <a href="#fnref:ymmvmap" class="reversefootnote">&#8617;&#65038;</a></p>
+    </li>
+  </ol>
+</div>
+
+    </article>
+    <hr>
+  
+    <article>
+      <span class="post-meta">6th May 2021</span>
+      <h3>
+        
+        
+        <a class="post-link" href="/devlog/building-a-hex-grid-with-SpriteKit/">
+          Building a hex grid with SpriteKit
+        </a>
+      </h3>
+      <p>A large portion of the gameplay of <em>The Forest</em> will take place on a hex grid akin to board games like <em>Terraforming Mars</em>, <em>Gloomhaven</em>, and <em>1861: The Railways of the Russian Empire</em><sup id="fnref:railways"><a href="#fn:railways" class="footnote">1</a></sup>. The majority of the board will be tiles that are never interacted with; these will just display some trees and will help give a sense of scale to the area. The remainder will be interactive tiles that can be flipped over to chart your course through the woods. In my head, I assumed I’d need to render each tile manually by looping through every column and every row and drawing the tile with a bit of offset on each row so they stack neatly. It turns out that SpriteKit already has this covered for us with <code class="highlighter-rouge">SKTileMapNode</code>.</p>
+
+<p>The idea behind the <code class="highlighter-rouge">SKTileMapNode</code> is to draw background maps akin to something you’d see in the 2D Zelda games. For example, you might have some grass that turns into a desert and has a river running through. This would typically be generated in advance and Apple provides a way to create these kinds of maps using the SpriteKit Scene Editor within Xcode<sup id="fnref:wysiwyg"><a href="#fn:wysiwyg" class="footnote">2</a></sup>. They also provide a way to procedurally generate maps if you want to create something randomised including adjacency rules so you can specify complex ideas like how a shoreline should work<sup id="fnref:hackingtilemap"><a href="#fn:hackingtilemap" class="footnote">3</a></sup>.</p>
+
+<p>I don’t need anything quite that sophisticated but this does work well in terms of generating a random distribution of background tree tiles for my map. To begin with, I have 10 different images for the hexes I want to generate as my base map all courtesy of the excellent <a href="https://stevencolling.itch.io/isle-of-lore-2-hex-tiles-regular">Isle of Lore 2 Hex Tiles Regular</a> set by <a href="https://www.stevencolling.com">Steven Colling</a>.</p>
+
+<div class="gofigure">
+    <img src="https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/hex-grid-background-tiles.png" alt="10 dense forest tiles" />
+    <figure>10 dense forest tiles. They are all slightly different.</figure>
+</div>
+
+<p>These images can all be placed into a SpriteKit Tile Set file within Xcode where we can define that they are of a “Hexagonal Pointy” type<sup id="fnref:skstype"><a href="#fn:skstype" class="footnote">4</a></sup>. With that done, it’s a simple case of adding the map to our scene:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">guard</span> <span class="k">let</span> <span class="nv">tileSet</span> <span class="o">=</span> <span class="kt">SKTileSet</span><span class="p">(</span><span class="nv">named</span><span class="p">:</span> <span class="s">"Forest Tiles"</span><span class="p">)</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nf">fatalError</span><span class="p">(</span><span class="s">"Could not find Forest Tiles set"</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="k">let</span> <span class="nv">map</span> <span class="o">=</span> <span class="kt">SKTileMapNode</span><span class="p">(</span><span class="nv">tileSet</span><span class="p">:</span> <span class="n">tileSet</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span> <span class="n">columns</span><span class="p">,</span> <span class="nv">rows</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="nv">tileSize</span><span class="p">:</span> <span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">width</span><span class="p">:</span> <span class="mi">210</span><span class="p">,</span> <span class="nv">height</span><span class="p">:</span> <span class="mi">210</span><span class="p">))</span>
+<span class="n">map</span><span class="o">.</span><span class="nf">fill</span><span class="p">(</span><span class="nv">with</span><span class="p">:</span> <span class="n">tileSet</span><span class="o">.</span><span class="n">tileGroups</span><span class="o">.</span><span class="n">first</span><span class="p">)</span>
+<span class="n">map</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">"background"</span>
+<span class="n">map</span><span class="o">.</span><span class="n">zPosition</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="nf">addChild</span><span class="p">(</span><span class="n">map</span><span class="p">)</span></code></pre></figure>
+
+<p>When creating the <code class="highlighter-rouge">SKTileMapNode</code> we tell it which <code class="highlighter-rouge">SKTileSet</code> to use (based on the *.sks file we created earlier), the number of columns and rows we want, and the size each tile should be displayed at. We then tell the map to fill using the tile set which will generate the map using a random mix of the 10 tiles we made available. Finally we name the node for use later on, set the zPosition to be 0 so it sits below everything, and add it to the scene. The end result is a fixed hex grid with a random distribution of tree images:</p>
+
+<div class="gofigure">
+    <img src="https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/first-rendered-grid.jpg" alt="A hex grid with randomly distributed forest tiles" />
+    <figure>A hex grid with randomly distributed forest tiles.</figure>
+</div>
+
+<p>The main advantage to this method (beyond concise code) is that it is also far more efficient as it is a single node within SpriteKit; adding each tile manually would result in a node for every tile. However, we can’t interact with this grid so we need to do some more work in order to add our actual game tiles.</p>
+
+<p>Fortunately, it’s fairly easy to ascertain where we are on the tile map as there is a <code class="highlighter-rouge">centerOfTile(atColumn column: Int, row: Int)</code> method which gives us a <code class="highlighter-rouge">CGPoint</code> for the center of a defined tile. All I need to do is choose where I want my real tiles to go (by way of a grid reference) and then add them to the scene using the position that the tile map returns for that particular reference.</p>
+
+<p>I’m planning on having tiles flip over when you interact with them which adds an extra wrinkle as you’ll be able to see this base tile map behind the flip animation. To do that, I need to ensure that when I add a tile on top of the map that I also alter the tile group to use a blank hex that is the same colour as the background of the scene:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">let</span> <span class="nv">definition</span> <span class="o">=</span> <span class="kt">SKTileDefinition</span><span class="p">(</span><span class="nv">texture</span><span class="p">:</span> <span class="kt">SKTexture</span><span class="p">(</span><span class="nv">imageNamed</span><span class="p">:</span> <span class="s">"hex_background"</span><span class="p">),</span> <span class="nv">size</span><span class="p">:</span> <span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">width</span><span class="p">:</span> <span class="mi">210</span><span class="p">,</span> <span class="nv">height</span><span class="p">:</span> <span class="mi">210</span><span class="p">))</span>
+<span class="k">let</span> <span class="nv">group</span> <span class="o">=</span> <span class="kt">SKTileGroup</span><span class="p">(</span><span class="nv">tileDefinition</span><span class="p">:</span> <span class="n">definition</span><span class="p">)</span>
+<span class="n">map</span><span class="o">.</span><span class="nf">setTileGroup</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="nv">forColumn</span><span class="p">:</span> <span class="n">column</span><span class="p">,</span> <span class="nv">row</span><span class="p">:</span> <span class="n">row</span><span class="p">)</span></code></pre></figure>
+
+<p>After playing around with light nodes and overlays (which I’ll detail in a later post), a test rendering looks something like this:</p>
+
+<div class="gofigure">
+    <img src="https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/hex-flipping.gif" alt="Flipping a hex tile" />
+</div>
+
+<p>Whilst the scene has lighting and multiple visible hexes<sup id="fnref:lightingarticle"><a href="#fn:lightingarticle" class="footnote">5</a></sup>, it’s really only made up of the six tiles you see on top (which look like background tiles until an animation appears to make them flip) and the background tile map with a few blank hexes strategically placed. I’m very happy with how easy it was to get started with a hex board in SpriteKit and will now be moving on to the process of generating the various tiles that will be placed on the board.</p>
+
+<div class="footnotes">
+  <ol>
+    <li id="fn:railways">
+      <p>A personal favourite of mine. Trains? Stock markets? The ability to screw over your opponent, perform a hostile takeover of their company, then drive it into the ground for personal gain? Perfection. 👨🏻‍🍳🤌🏻 <a href="#fnref:railways" class="reversefootnote">&#8617;&#65038;</a></p>
+    </li>
+    <li id="fn:wysiwyg">
+      <p>It’s a wysiwyg interface suitable for a designer to create a map with no programming knowledge. Check out <a href="https://theliquidfire.com/2018/02/12/spritekit-tile-maps-intro/">this tutorial from The Liquid Fire</a> to see it in action. <a href="#fnref:wysiwyg" class="reversefootnote">&#8617;&#65038;</a></p>
+    </li>
+    <li id="fn:hackingtilemap">
+      <p>For a deep dive, check out <a href="https://www.hackingwithswift.com/example-code/games/how-to-create-a-random-terrain-tile-map-using-sktilemapnode-and-gkperlinnoisesource">this tutorial</a> from Hacking with Swift that shows you how to create a procedurally generated map with water, grass, and sand. <a href="#fnref:hackingtilemap" class="reversefootnote">&#8617;&#65038;</a></p>
+    </li>
+    <li id="fn:skstype">
+      <p>Other choices include “Grid”, “Isometric”, and “Hexagonal Flat”. <a href="#fnref:skstype" class="reversefootnote">&#8617;&#65038;</a></p>
+    </li>
+    <li id="fn:lightingarticle">
+      <p>I forgot to take an animation when I originally built this feature so had to use one once other work had already been done. You can learn about the lighting in my <a href="/devlog/sklightnode-and-normal-maps/">next article</a>. <a href="#fnref:lightingarticle" class="reversefootnote">&#8617;&#65038;</a></p>
+    </li>
+  </ol>
+</div>
+
+    </article>
+    <hr>
+  
+
+  <section id="pagination">
+     
+  
+    
+  </section>
+</div>
+
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Twitter</li>
+          <li><a href="https://twitter.com/bendodson">@BenDodson</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="contact-list">
+          <li class="p-name">Email</li>
+          <li><a class="u-email" href="mailto:ben@bendodson.com">ben@bendodson.com</a></li>
+        </ul>
+      </div>
+      
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

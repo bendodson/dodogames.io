@@ -1,0 +1,312 @@
+<?xml version="1.0"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>The Plainswalker</title>
+    <subtitle>Standard MTG from Ixalan onwards
+    <link href="https://theplainswalker.com/feed.xml" rel="self" type="application/atom+xml" />
+    <link href="https://theplainswalker.com/" rel="alternate" type="text/html" />
+    <atom:link href="https://theplainswalker.com/feed.xml" rel="self" type="application/rss+xml" />
+    <description>Standard MTG from Ixalan onwards</description>
+    <language>en-gb</language>
+    <pubDate>Tue, 07 Sep 2021 15:08:23 +0100</pubDate>
+    <lastBuildDate>Tue, 07 Sep 2021 15:08:23 +0100</lastBuildDate>
+
+    
+    <item>
+      <title>Path generation</title>
+      
+        <link>https://theplainswalker.com/devlog/path-generation/</link>
+      
+      <pubDate>Tue, 24 Aug 2021 12:30:00 +0100</pubDate>
+      <author>ben@theplainswalker.com (Ben Dodson)</author>
+      <guid>https://theplainswalker.com/devlog/path-generation/</guid>
+      <description>&lt;p&gt;One of the key parts of &lt;em&gt;The Forest&lt;/em&gt; is the gradual exploration of the dense woods that make up the game board. Typically your character will start in a clearing and then you’ll be able to navigate along roads and paths to the next adjacent hex. The first step (after &lt;a href=&quot;/devlog/building-a-hex-grid-with-spritekit/&quot;&gt;generating the background&lt;/a&gt;) is to choose where the player starts, work out where the player needs to get to, and then create a random path from point A to point B. This is called “path generation” and is something I’ve been focused on for the last week or so.&lt;/p&gt;
+
+&lt;p&gt;To begin with, I have a scenario JSON file which will dictate the fixed elements of the current scenario. It looks something like this presently:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-json&quot; data-lang=&quot;json&quot;&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;title&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;In the beginning&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;map&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;columns&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;8&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;rows&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;8&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;start&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;environment&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;clearing&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;distanceFromBoardEdge&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;finish&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;minimumDistanceFromStart&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;maximumDistanceFromStart&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;9&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;We’re most interested in the map section which defines the basic size of the map (8 by 8) and gives us a rough indication of where to start and finish; in this case, we’re going to place a “clearing” tile somewhere on the edge of the grid and have the finish be 6 to 9 hexes away from the start. This sense of randomness should mean that scenario’s can be replayed and still feel fresh; there will be story beats that are consistent but the random layout and random encounters should keep it interesting.&lt;/p&gt;
+
+&lt;p&gt;In my first iteration of the path finding code, I thought the easiest solution would be to pick my random starting hex, pick the distance (if there is a min/max), and then generate every single possible route before picking one at random. Doing this is relatively straightforward:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-swift&quot; data-lang=&quot;swift&quot;&gt;&lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;possibleRoutesToVictory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;start&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Set&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;distance&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;random&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;in&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;finish&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;minimumDistanceFromStart&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;finish&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;maximumDistanceFromStart&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;routes&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Set&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;nf&quot;&gt;enlargeRoute&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;start&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;routeDistance&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;distance&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;routes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;routes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;routes&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;enlargeRoute&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;route&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;routeDistance&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;routes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;inout&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Set&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;references&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;route&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;components&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;separatedBy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;-&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;guard&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;references&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;routeDistance&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;routes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;insert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;route&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    
+    &lt;span class=&quot;k&quot;&gt;guard&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;reference&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;references&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;last&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nf&quot;&gt;fatalError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Could not get last reference&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    
+    &lt;span class=&quot;k&quot;&gt;guard&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;maxColumn&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;columns&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;toAlphabet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;gridReference&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;reference&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;toGridReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nf&quot;&gt;fatalError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Could not create maxColumn or gridReference&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    
+    &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;neighbours&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gridReference&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;neighbours&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;maxColumn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;maxColumn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;maxRow&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rows&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;filter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;references&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;contains&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)})&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;neighbour&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;neighbours&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nf&quot;&gt;enlargeRoute&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;route&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;neighbour&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;routeDistance&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;routeDistance&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;routes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;routes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;Our &lt;code class=&quot;highlighter-rouge&quot;&gt;possibleRoutesToVictory&lt;/code&gt; function is given the starting hex position, picks the length of the route, and then creates an empty &lt;code class=&quot;highlighter-rouge&quot;&gt;Set&lt;/code&gt; that can hold strings. The strings in this set will look something like &lt;em&gt;A1-B2-B3-C3-C2-C1-D1&lt;/em&gt; and denote the grid reference of the hexes the route proceeds through; this set is returned at the end of the method so we can then pick a route to render.&lt;/p&gt;
+
+&lt;p&gt;The main part of the process is calling a recursive function named &lt;code class=&quot;highlighter-rouge&quot;&gt;enlargeRoute&lt;/code&gt; that takes a route string, distance, and our routes set. It separates the passed route into grid references and checks to see if the count is equal to the hex distance we’re looking for. If it is, the string is put into the routes set as a valid path and the method exited. If not, we check all of the neighbours&lt;sup id=&quot;fnref:neighbours&quot;&gt;&lt;a href=&quot;#fn:neighbours&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; of the last hex in the route and run this method again on every hex that isn’t already present in the route thus potentially spawning up to 6 new routes. In this way, we gradually increase the length of the route and create new routes until we’ve gone through every single possible iteration.&lt;/p&gt;
+
+&lt;p&gt;Once completed, we have a set of route strings and we can pick one at random to use as our route. For a journey with a distance of 6 hexes this translates into just over 4000 choices for us to choose from:&lt;/p&gt;
+
+&lt;div class=&quot;gofigure&quot;&gt;
+    &lt;img src=&quot;https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/forest-simple-pathing.gif&quot; alt=&quot;A few of the ~4000 six-hex routes that are generated in around 0.1 seconds&quot; /&gt;
+    &lt;figure&gt;A few of the ~4000 six-hex routes that are generated in around 0.1 seconds.&lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;This seems great in theory but it quickly unravelled when I tried longer paths. For example, a distance of 10 hexes turned into 788,550 possible routes taking 7 seconds to generate. That’s not going to work. 😂&lt;/p&gt;
+
+&lt;p&gt;My first thought is that things are obviously quicker when we’re working in smaller chunks as there are far less choices. I thought I could maybe break the routes into pieces by turning a 12 hex route into three sets of 4 hex routes. That could potentially lead to a lot of dead ends though as it would be easy for the hexes to get trapped against a wall or corner which would then mean the routes could never complete (and whilst I could mitigate that by regenerating the initial 4 hex seeds and starting again it was getting a bit convoluted).&lt;/p&gt;
+
+&lt;p&gt;Instead, the final version was painfully simple. In the code above I’m generating every single route but what if I just stopped inserting into the set after 1 route is generated? With the current code that would mean the path would always be the same as the neighbours are tested in the same order every time but randomising that would lead to the result I was looking for.&lt;/p&gt;
+
+&lt;div class=&quot;gofigure&quot;&gt;
+    &lt;img src=&quot;https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/path-generation-fix.png&quot; alt=&quot;A diff showing the simple fix for generating a single path&quot; /&gt;
+    &lt;figure&gt;A diff showing the simple fix for generating a single path.&lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;All I needed to do was shuffle the array of hex neighbours that are returned and then exit the function once a single route is found. This leads to paths being generated in a mere 2 milliseconds, even when they are 40 hexes long.&lt;/p&gt;
+
+&lt;div class=&quot;gofigure&quot;&gt;
+    &lt;img src=&quot;https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/path-generation-40-hexes.jpg&quot; alt=&quot;A random forty-hex route generated in 2 milliseconds&quot; /&gt;
+    &lt;figure&gt;A random forty-hex route generated in 2 milliseconds.&lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The end result works well as it runs until it finds a valid route; if the random nature of the first route ends in a spiral that means we can’t get to the full length of the route then it doesn’t matter as it will keep iterating through every choice until a single route is found, then stop to avoid wasting further cycles on a solved problem.&lt;/p&gt;
+
+&lt;p&gt;With this now working as intended, the next step is to start drawing a path on top of the hex tiles before beginning the process of adding some dead ends and shortcuts throughout the map.&lt;/p&gt;
+
+&lt;div class=&quot;footnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:neighbours&quot;&gt;
+      &lt;p&gt;The calculation for the neighbours of a hex is fairly simple translating the current grid reference and then determining what the 6 hexes around it will be. It needs a maxColumn and maxRow as we don’t want to return hexes that are on the outside of the bounds of the board. We already know not go below 0,0 so we don’t require a minimum. &lt;a href=&quot;#fnref:neighbours&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&amp;#65038;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>SKLightNode, normal maps, and light scaling</title>
+      
+        <link>https://theplainswalker.com/devlog/sklightnode-and-normal-maps/</link>
+      
+      <pubDate>Wed, 02 Jun 2021 12:30:00 +0100</pubDate>
+      <author>ben@theplainswalker.com (Ben Dodson)</author>
+      <guid>https://theplainswalker.com/devlog/sklightnode-and-normal-maps/</guid>
+      <description>&lt;p&gt;One of my aims with &lt;em&gt;The Forest&lt;/em&gt; is to make it feel like you are genuinely exploring a vast forest, the size and scale of which are unknowable to the player. When you’re stood in a dense forest in the real world, it’s hard to tell if you’re miles or metres away from the exit and that’s what I want to get across here. In the first instance, I’ve extended my &lt;a href=&quot;/devlog/building-a-hex-grid-with-SpriteKit/&quot;&gt;hex grid tile map&lt;/a&gt; from last month by adding three additional tiles worth of depth around the main board. The reason for this is that the camera will be locked to the main board so if you scroll to the edge you won’t see the edge of the tiles but rather a continuation making it seem larger than it really is. The second element and the focus of today’s article is to introduce lighting, or more specifically, lack of lighting.&lt;/p&gt;
+
+&lt;p&gt;To begin with, I’m going to alter my tile map by fully blending it with the grey colour I use for the background upon which all the tiles sit using &lt;code class=&quot;highlighter-rouge&quot;&gt;color&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;colorBlendFactor&lt;/code&gt;. This will ensure the background tiles are dark whilst the revealed tiles look almost backlit:&lt;/p&gt;
+
+&lt;div class=&quot;gofigure&quot;&gt;
+    &lt;img src=&quot;https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/color-blending-tiles.jpg&quot; alt=&quot;Darkening the surrounding tree tiles using a colour blend&quot; /&gt;
+    &lt;figure&gt;Darkening the surrounding tree tiles using a colour blend.&lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;This already looks much better and immediately focusses attention on the currently active tiles. However, we can go a step further by taking advantage of light nodes to provide dynamic lighting. The first step is to set our tile map to use a &lt;code class=&quot;highlighter-rouge&quot;&gt;lightingBitMask&lt;/code&gt;; you can use different bits so that certain lights can affect different nodes but for now we’re just setting it to &lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt;. Our map will now respect any light that is thrown at it. To do that, we need to add an &lt;code class=&quot;highlighter-rouge&quot;&gt;SKLightNode&lt;/code&gt; to each of our revealed tiles:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-swift&quot; data-lang=&quot;swift&quot;&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;node&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;SKLightNode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;node&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;categoryBitMask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;colors&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;UIColor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;white&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;blue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;orange&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;node&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lightColor&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;colors&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;randomElement&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;??&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;white&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;node&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;zPosition&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;node&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;falloff&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;1.8&lt;/span&gt;
+&lt;span class=&quot;nf&quot;&gt;addChild&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;node&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;We create a light node and set its &lt;code class=&quot;highlighter-rouge&quot;&gt;categoryBitMask&lt;/code&gt; to match the &lt;code class=&quot;highlighter-rouge&quot;&gt;lightingBitMask&lt;/code&gt; of the nodes we want to illuminate (in this case the background tile map). Then we choose a colour, set our Z position so we’re on top of our map, choose the rate of decay for our light (known as falloff), and add it to our scene. An &lt;code class=&quot;highlighter-rouge&quot;&gt;SKLightNode&lt;/code&gt; is itself invisible; it’s only purpose is to affect the light on other nodes. The end result looks pretty good:&lt;/p&gt;
+
+&lt;div class=&quot;gofigure&quot;&gt;
+    &lt;img src=&quot;https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/initial-sklightnode-implementation.jpg&quot; alt=&quot;Ambient light from the revealed tiles illuminates some of the surrounding forest&quot; /&gt;
+    &lt;figure&gt;Ambient light from the revealed tiles illuminates some of the surrounding forest.&lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Whilst we haven’t changed the revealed tiles at all, they now stand out even more thanks to the background tiles slowly fading into blackness. If you were to scroll to the sides you’d eventually see nothing which is exactly how I wanted it. There is one more improvement that can be made and that’s to incorporate a certain amount of depth to the tiles. To do this, we use normal maps which are described as a “texture mapping technique used for faking the lighting of bumps and dents”&lt;sup id=&quot;fnref:normalmapwiki&quot;&gt;&lt;a href=&quot;#fn:normalmapwiki&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;. You can use an app like &lt;a href=&quot;https://www.codeandweb.com/spriteilluminator&quot;&gt;SpriteIlluminator&lt;/a&gt; to take your 2D images and convert them into normal maps for use within SpriteKit and this is exactly what I did before realising that you can already do this for free with SpriteKit. 🤦🏻‍♂️&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-swift&quot; data-lang=&quot;swift&quot;&gt;&lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;addNormalTextures&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;normalMaps&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;SKTexture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]()&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;..&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;numberOfRows&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;..&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;numberOfColumns&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;definition&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tileDefinition&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;atColumn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;row&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;guard&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;definition&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;normalMaps&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;normalMaps&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;definition&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;textures&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;first&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;generatingNormalMap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;withSmoothness&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;contrast&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;texture&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;normalMaps&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;definition&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;normalTextures&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;texture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;To do this, we need a function to loop through each hex in the tile map. If we haven’t already generated a normal map for the current tile definition (which is one of ten different images I use for the tile map) then we go down to the texture and generate a map with a smoothness and a contrast of &lt;code class=&quot;highlighter-rouge&quot;&gt;0.2&lt;/code&gt;, a figure I came to by trial and error&lt;sup id=&quot;fnref:ymmvmap&quot;&gt;&lt;a href=&quot;#fn:ymmvmap&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;.  Once done, the resulting map is stored in a temporary caching array before being added as a normal texture to the tile definition. Whilst apps like SpriteIlluminator give you a lot more freedom to create customised normal maps, the built in methods within SpriteKit are perfect for my needs and save me having to manually generate and store the maps for every texture I want to use. The end result is a vast improvement again:&lt;/p&gt;
+
+&lt;div class=&quot;gofigure&quot;&gt;
+    &lt;img src=&quot;https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/sklightnode-with-normal-maps.jpg&quot; alt=&quot;Normal maps add some texture to the background tiles&quot; /&gt;
+    &lt;figure&gt;Normal maps add some texture to the background tiles.&lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The individual trees on the tile are now slightly embossed leading to extra shadow detail based on the light coming from the revealed tiles. I particularly like that the trees blending into the darkness can be seen by the light glinting from the tips whilst the rest is obscured.&lt;/p&gt;
+
+&lt;p&gt;Whilst I’m happy with where things are now, a new issue appeared when I started to zoom in and out of my board using an &lt;code class=&quot;highlighter-rouge&quot;&gt;SKCameraNode&lt;/code&gt;; the light does not scale. It turns out that the &lt;a href=&quot;https://stackoverflow.com/a/44490984/205659&quot;&gt;light nodes might be based on the &lt;code class=&quot;highlighter-rouge&quot;&gt;SKView&lt;/code&gt; size&lt;/a&gt; rather than that of the scene so the camera does not adjust them. My solution was to create a subclass of &lt;code class=&quot;highlighter-rouge&quot;&gt;SKLightNode&lt;/code&gt; which reacts to the camera changing and adjusts its falloff accordingly:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-swift&quot; data-lang=&quot;swift&quot;&gt;&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;ScalableLightNode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;SKLightNode&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    
+    &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;fixedFalloff&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;CGFloat&lt;/span&gt;
+    
+    &lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;falloff&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;CGFloat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fixedFalloff&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;falloff&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;super&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;NotificationCenter&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;addObserver&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;selector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;#selector(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;scaleDidChange&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;BoardCameraMaster&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Notification&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cameraScaleDidChange&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    
+    &lt;span class=&quot;kd&quot;&gt;required&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;coder&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;aDecoder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;NSCoder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nf&quot;&gt;fatalError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;init(coder:) has not been implemented&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    
+    &lt;span class=&quot;kd&quot;&gt;@objc&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;scaleDidChange&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;notification&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Notification&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;guard&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;scale&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;notification&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;userInfo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;scale&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as?&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;CGFloat&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;nf&quot;&gt;fatalError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;BoardCameraMaster.Notification.cameraScaleDidChange received with no scale&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;nf&quot;&gt;updateFalloff&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;scale&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    
+    &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;updateFalloff&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;scale&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;CGFloat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;falloff&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fixedFalloff&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;scale&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;The node uses &lt;code class=&quot;highlighter-rouge&quot;&gt;NotificationCenter&lt;/code&gt; to be alerted when the camera scale has changed and then updates its falloff based on the initially provided value multiplied by the scale. The end result is not perfect (the radius seems to shrink faster when you’re zoomed out) but it’s close enough for my needs:&lt;/p&gt;
+
+&lt;div class=&quot;gofigure&quot;&gt;
+    &lt;img src=&quot;https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/scalable-sklightnode.gif&quot; alt=&quot;Scalable light node in action&quot; /&gt;
+    &lt;figure&gt;Scalable light node in action. The low quality gif doesn't really showcase it as well as it could but you hopefully get the general idea.&lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;This would be a good place to stop but unfortunately there are two final wrinkles that are going to cause problems. Firstly, if I add a light node to every revealed tile then the amount of light gets compounded; this leads to the board being far too illuminated as more tiles get revealed. Secondly, there appears to be a limit to how many light nodes you can have; once exceeded, they just stop working. In short, having a light node on every tile is not going to work.&lt;/p&gt;
+
+&lt;p&gt;To remedy this, I think I’m going to only have a light node on the tile in which the player character is currently standing. This will illuminate the bit of forest they are stood in but the path they have taken will still be “lit up” by virtue of being a revealed tile that isn’t affected by lighting; it just won’t cast an ambient glow into the surrounding trees. That will leave me with enough light nodes to do other interesting effects like showing a campfire in the distance or have flashes of lightning in a storm that light up the whole forest temporarily.&lt;/p&gt;
+
+&lt;p&gt;That’s a job for another day though as I’m now keen to get on with the process of actually generating the paths that will turn this into something more closely resembling a game…&lt;/p&gt;
+
+&lt;div class=&quot;footnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:normalmapwiki&quot;&gt;
+      &lt;p&gt;Wikipedia. &lt;a href=&quot;https://en.wikipedia.org/wiki/Normal_mapping&quot;&gt;&lt;em&gt;Normal Mapping&lt;/em&gt;&lt;/a&gt; &lt;a href=&quot;#fnref:normalmapwiki&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&amp;#65038;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:ymmvmap&quot;&gt;
+      &lt;p&gt;The precise numbers you want will vary depending on the effect you’re going for and the starting 2D image. &lt;a href=&quot;#fnref:ymmvmap&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&amp;#65038;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Building a hex grid with SpriteKit</title>
+      
+        <link>https://theplainswalker.com/devlog/building-a-hex-grid-with-SpriteKit/</link>
+      
+      <pubDate>Thu, 06 May 2021 12:30:00 +0100</pubDate>
+      <author>ben@theplainswalker.com (Ben Dodson)</author>
+      <guid>https://theplainswalker.com/devlog/building-a-hex-grid-with-SpriteKit/</guid>
+      <description>&lt;p&gt;A large portion of the gameplay of &lt;em&gt;The Forest&lt;/em&gt; will take place on a hex grid akin to board games like &lt;em&gt;Terraforming Mars&lt;/em&gt;, &lt;em&gt;Gloomhaven&lt;/em&gt;, and &lt;em&gt;1861: The Railways of the Russian Empire&lt;/em&gt;&lt;sup id=&quot;fnref:railways&quot;&gt;&lt;a href=&quot;#fn:railways&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;. The majority of the board will be tiles that are never interacted with; these will just display some trees and will help give a sense of scale to the area. The remainder will be interactive tiles that can be flipped over to chart your course through the woods. In my head, I assumed I’d need to render each tile manually by looping through every column and every row and drawing the tile with a bit of offset on each row so they stack neatly. It turns out that SpriteKit already has this covered for us with &lt;code class=&quot;highlighter-rouge&quot;&gt;SKTileMapNode&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;The idea behind the &lt;code class=&quot;highlighter-rouge&quot;&gt;SKTileMapNode&lt;/code&gt; is to draw background maps akin to something you’d see in the 2D Zelda games. For example, you might have some grass that turns into a desert and has a river running through. This would typically be generated in advance and Apple provides a way to create these kinds of maps using the SpriteKit Scene Editor within Xcode&lt;sup id=&quot;fnref:wysiwyg&quot;&gt;&lt;a href=&quot;#fn:wysiwyg&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;. They also provide a way to procedurally generate maps if you want to create something randomised including adjacency rules so you can specify complex ideas like how a shoreline should work&lt;sup id=&quot;fnref:hackingtilemap&quot;&gt;&lt;a href=&quot;#fn:hackingtilemap&quot; class=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
+
+&lt;p&gt;I don’t need anything quite that sophisticated but this does work well in terms of generating a random distribution of background tree tiles for my map. To begin with, I have 10 different images for the hexes I want to generate as my base map all courtesy of the excellent &lt;a href=&quot;https://stevencolling.itch.io/isle-of-lore-2-hex-tiles-regular&quot;&gt;Isle of Lore 2 Hex Tiles Regular&lt;/a&gt; set by &lt;a href=&quot;https://www.stevencolling.com&quot;&gt;Steven Colling&lt;/a&gt;.&lt;/p&gt;
+
+&lt;div class=&quot;gofigure&quot;&gt;
+    &lt;img src=&quot;https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/hex-grid-background-tiles.png&quot; alt=&quot;10 dense forest tiles&quot; /&gt;
+    &lt;figure&gt;10 dense forest tiles. They are all slightly different.&lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;These images can all be placed into a SpriteKit Tile Set file within Xcode where we can define that they are of a “Hexagonal Pointy” type&lt;sup id=&quot;fnref:skstype&quot;&gt;&lt;a href=&quot;#fn:skstype&quot; class=&quot;footnote&quot;&gt;4&lt;/a&gt;&lt;/sup&gt;. With that done, it’s a simple case of adding the map to our scene:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-swift&quot; data-lang=&quot;swift&quot;&gt;&lt;span class=&quot;k&quot;&gt;guard&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;tileSet&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;SKTileSet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;named&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Forest Tiles&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nf&quot;&gt;fatalError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Could not find Forest Tiles set&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;SKTileMapNode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;tileSet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tileSet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;8&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;columns&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;rows&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;8&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;tileSize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;210&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;210&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fill&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;with&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tileSet&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tileGroups&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;first&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;background&quot;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;zPosition&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
+&lt;span class=&quot;nf&quot;&gt;addChild&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;When creating the &lt;code class=&quot;highlighter-rouge&quot;&gt;SKTileMapNode&lt;/code&gt; we tell it which &lt;code class=&quot;highlighter-rouge&quot;&gt;SKTileSet&lt;/code&gt; to use (based on the *.sks file we created earlier), the number of columns and rows we want, and the size each tile should be displayed at. We then tell the map to fill using the tile set which will generate the map using a random mix of the 10 tiles we made available. Finally we name the node for use later on, set the zPosition to be 0 so it sits below everything, and add it to the scene. The end result is a fixed hex grid with a random distribution of tree images:&lt;/p&gt;
+
+&lt;div class=&quot;gofigure&quot;&gt;
+    &lt;img src=&quot;https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/first-rendered-grid.jpg&quot; alt=&quot;A hex grid with randomly distributed forest tiles&quot; /&gt;
+    &lt;figure&gt;A hex grid with randomly distributed forest tiles.&lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The main advantage to this method (beyond concise code) is that it is also far more efficient as it is a single node within SpriteKit; adding each tile manually would result in a node for every tile. However, we can’t interact with this grid so we need to do some more work in order to add our actual game tiles.&lt;/p&gt;
+
+&lt;p&gt;Fortunately, it’s fairly easy to ascertain where we are on the tile map as there is a &lt;code class=&quot;highlighter-rouge&quot;&gt;centerOfTile(atColumn column: Int, row: Int)&lt;/code&gt; method which gives us a &lt;code class=&quot;highlighter-rouge&quot;&gt;CGPoint&lt;/code&gt; for the center of a defined tile. All I need to do is choose where I want my real tiles to go (by way of a grid reference) and then add them to the scene using the position that the tile map returns for that particular reference.&lt;/p&gt;
+
+&lt;p&gt;I’m planning on having tiles flip over when you interact with them which adds an extra wrinkle as you’ll be able to see this base tile map behind the flip animation. To do that, I need to ensure that when I add a tile on top of the map that I also alter the tile group to use a blank hex that is the same colour as the background of the scene:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-swift&quot; data-lang=&quot;swift&quot;&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;definition&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;SKTileDefinition&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;texture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;SKTexture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;imageNamed&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;hex_background&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;210&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;210&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;group&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;SKTileGroup&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;tileDefinition&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;definition&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;setTileGroup&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;group&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;forColumn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;column&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;row&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;row&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;After playing around with light nodes and overlays (which I’ll detail in a later post), a test rendering looks something like this:&lt;/p&gt;
+
+&lt;div class=&quot;gofigure&quot;&gt;
+    &lt;img src=&quot;https://dodogames.s3.eu-west-2.amazonaws.com/devlog/2021/hex-flipping.gif&quot; alt=&quot;Flipping a hex tile&quot; /&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Whilst the scene has lighting and multiple visible hexes&lt;sup id=&quot;fnref:lightingarticle&quot;&gt;&lt;a href=&quot;#fn:lightingarticle&quot; class=&quot;footnote&quot;&gt;5&lt;/a&gt;&lt;/sup&gt;, it’s really only made up of the six tiles you see on top (which look like background tiles until an animation appears to make them flip) and the background tile map with a few blank hexes strategically placed. I’m very happy with how easy it was to get started with a hex board in SpriteKit and will now be moving on to the process of generating the various tiles that will be placed on the board.&lt;/p&gt;
+
+&lt;div class=&quot;footnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:railways&quot;&gt;
+      &lt;p&gt;A personal favourite of mine. Trains? Stock markets? The ability to screw over your opponent, perform a hostile takeover of their company, then drive it into the ground for personal gain? Perfection. 👨🏻‍🍳🤌🏻 &lt;a href=&quot;#fnref:railways&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&amp;#65038;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:wysiwyg&quot;&gt;
+      &lt;p&gt;It’s a wysiwyg interface suitable for a designer to create a map with no programming knowledge. Check out &lt;a href=&quot;https://theliquidfire.com/2018/02/12/spritekit-tile-maps-intro/&quot;&gt;this tutorial from The Liquid Fire&lt;/a&gt; to see it in action. &lt;a href=&quot;#fnref:wysiwyg&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&amp;#65038;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:hackingtilemap&quot;&gt;
+      &lt;p&gt;For a deep dive, check out &lt;a href=&quot;https://www.hackingwithswift.com/example-code/games/how-to-create-a-random-terrain-tile-map-using-sktilemapnode-and-gkperlinnoisesource&quot;&gt;this tutorial&lt;/a&gt; from Hacking with Swift that shows you how to create a procedurally generated map with water, grass, and sand. &lt;a href=&quot;#fnref:hackingtilemap&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&amp;#65038;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:skstype&quot;&gt;
+      &lt;p&gt;Other choices include “Grid”, “Isometric”, and “Hexagonal Flat”. &lt;a href=&quot;#fnref:skstype&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&amp;#65038;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:lightingarticle&quot;&gt;
+      &lt;p&gt;I forgot to take an animation when I originally built this feature so had to use one once other work had already been done. You can learn about the lighting in my &lt;a href=&quot;/devlog/sklightnode-and-normal-maps/&quot;&gt;next article&lt;/a&gt;. &lt;a href=&quot;#fnref:lightingarticle&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&amp;#65038;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+
+  </channel> 
+</rss>
