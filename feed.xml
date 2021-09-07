@@ -8,8 +8,8 @@
     <atom:link href="https://dodogames.io/feed.xml" rel="self" type="application/rss+xml" />
     <description>Indie games for iPhone, iPad, and Apple TV</description>
     <language>en-gb</language>
-    <pubDate>Tue, 07 Sep 2021 15:41:23 +0100</pubDate>
-    <lastBuildDate>Tue, 07 Sep 2021 15:41:23 +0100</lastBuildDate>
+    <pubDate>Tue, 07 Sep 2021 15:46:08 +0100</pubDate>
+    <lastBuildDate>Tue, 07 Sep 2021 15:46:08 +0100</lastBuildDate>
 
     
     <item>
@@ -211,7 +211,7 @@
     &lt;figure&gt;Scalable light node in action. The low quality gif doesn't really showcase it as well as it could but you hopefully get the general idea.&lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;p&gt;This would be a good place to stop but unfortunately there are two final wrinkles that are going to cause problems. Firstly, if I add a light node to every revealed tile then the amount of light gets compounded; this leads to the board being far too illuminated as more tiles get revealed. Secondly, there appears to be a limit to how many light nodes you can have; once exceeded, they just stop working. In short, having a light node on every tile is not going to work.&lt;/p&gt;
+&lt;p&gt;This would be a good place to stop but unfortunately there are two final wrinkles that are going to cause problems. Firstly, if I add a light node to every revealed tile then the amount of light gets compounded; this leads to the board being far too illuminated as more tiles get revealed. Secondly, there appears to be a limit to how many light nodes you can have; once exceeded, they just don’t appear. That’s not going to work. 😂&lt;/p&gt;
 
 &lt;p&gt;To remedy this, I think I’m going to only have a light node on the tile in which the player character is currently standing. This will illuminate the bit of forest they are stood in but the path they have taken will still be “lit up” by virtue of being a revealed tile that isn’t affected by lighting; it just won’t cast an ambient glow into the surrounding trees. That will leave me with enough light nodes to do other interesting effects like showing a campfire in the distance or have flashes of lightning in a storm that light up the whole forest temporarily.&lt;/p&gt;
 
