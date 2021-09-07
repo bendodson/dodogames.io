@@ -1,25 +1,25 @@
 <?xml version="1.0"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>The Plainswalker</title>
-    <subtitle>Standard MTG from Ixalan onwards
-    <link href="https://theplainswalker.com/feed.xml" rel="self" type="application/atom+xml" />
-    <link href="https://theplainswalker.com/" rel="alternate" type="text/html" />
-    <atom:link href="https://theplainswalker.com/feed.xml" rel="self" type="application/rss+xml" />
-    <description>Standard MTG from Ixalan onwards</description>
+    <title>Dodo Games</title>
+    <subtitle>Indie games for iPhone, iPad, and Apple TV</subtitle>
+    <link href="https://dodogames.io/feed.xml" rel="self" type="application/atom+xml" />
+    <link href="https://dodogames.io/" rel="alternate" type="text/html" />
+    <atom:link href="https://dodogames.io/feed.xml" rel="self" type="application/rss+xml" />
+    <description>Indie games for iPhone, iPad, and Apple TV</description>
     <language>en-gb</language>
-    <pubDate>Tue, 07 Sep 2021 15:08:23 +0100</pubDate>
-    <lastBuildDate>Tue, 07 Sep 2021 15:08:23 +0100</lastBuildDate>
+    <pubDate>Tue, 07 Sep 2021 15:41:23 +0100</pubDate>
+    <lastBuildDate>Tue, 07 Sep 2021 15:41:23 +0100</lastBuildDate>
 
     
     <item>
       <title>Path generation</title>
       
-        <link>https://theplainswalker.com/devlog/path-generation/</link>
+        <link>https://dodogames.io/devlog/path-generation/</link>
       
       <pubDate>Tue, 24 Aug 2021 12:30:00 +0100</pubDate>
-      <author>ben@theplainswalker.com (Ben Dodson)</author>
-      <guid>https://theplainswalker.com/devlog/path-generation/</guid>
+      <author>ben@bendodson.com (Ben Dodson)</author>
+      <guid>https://dodogames.io/devlog/path-generation/</guid>
       <description>&lt;p&gt;One of the key parts of &lt;em&gt;The Forest&lt;/em&gt; is the gradual exploration of the dense woods that make up the game board. Typically your character will start in a clearing and then you’ll be able to navigate along roads and paths to the next adjacent hex. The first step (after &lt;a href=&quot;/devlog/building-a-hex-grid-with-spritekit/&quot;&gt;generating the background&lt;/a&gt;) is to choose where the player starts, work out where the player needs to get to, and then create a random path from point A to point B. This is called “path generation” and is something I’ve been focused on for the last week or so.&lt;/p&gt;
 
 &lt;p&gt;To begin with, I have a scenario JSON file which will dictate the fixed elements of the current scenario. It looks something like this presently:&lt;/p&gt;
@@ -117,11 +117,11 @@
     <item>
       <title>SKLightNode, normal maps, and light scaling</title>
       
-        <link>https://theplainswalker.com/devlog/sklightnode-and-normal-maps/</link>
+        <link>https://dodogames.io/devlog/sklightnode-and-normal-maps/</link>
       
       <pubDate>Wed, 02 Jun 2021 12:30:00 +0100</pubDate>
-      <author>ben@theplainswalker.com (Ben Dodson)</author>
-      <guid>https://theplainswalker.com/devlog/sklightnode-and-normal-maps/</guid>
+      <author>ben@bendodson.com (Ben Dodson)</author>
+      <guid>https://dodogames.io/devlog/sklightnode-and-normal-maps/</guid>
       <description>&lt;p&gt;One of my aims with &lt;em&gt;The Forest&lt;/em&gt; is to make it feel like you are genuinely exploring a vast forest, the size and scale of which are unknowable to the player. When you’re stood in a dense forest in the real world, it’s hard to tell if you’re miles or metres away from the exit and that’s what I want to get across here. In the first instance, I’ve extended my &lt;a href=&quot;/devlog/building-a-hex-grid-with-SpriteKit/&quot;&gt;hex grid tile map&lt;/a&gt; from last month by adding three additional tiles worth of depth around the main board. The reason for this is that the camera will be locked to the main board so if you scroll to the edge you won’t see the edge of the tiles but rather a continuation making it seem larger than it really is. The second element and the focus of today’s article is to introduce lighting, or more specifically, lack of lighting.&lt;/p&gt;
 
 &lt;p&gt;To begin with, I’m going to alter my tile map by fully blending it with the grey colour I use for the background upon which all the tiles sit using &lt;code class=&quot;highlighter-rouge&quot;&gt;color&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;colorBlendFactor&lt;/code&gt;. This will ensure the background tiles are dark whilst the revealed tiles look almost backlit:&lt;/p&gt;
@@ -233,11 +233,11 @@
     <item>
       <title>Building a hex grid with SpriteKit</title>
       
-        <link>https://theplainswalker.com/devlog/building-a-hex-grid-with-SpriteKit/</link>
+        <link>https://dodogames.io/devlog/building-a-hex-grid-with-SpriteKit/</link>
       
       <pubDate>Thu, 06 May 2021 12:30:00 +0100</pubDate>
-      <author>ben@theplainswalker.com (Ben Dodson)</author>
-      <guid>https://theplainswalker.com/devlog/building-a-hex-grid-with-SpriteKit/</guid>
+      <author>ben@bendodson.com (Ben Dodson)</author>
+      <guid>https://dodogames.io/devlog/building-a-hex-grid-with-SpriteKit/</guid>
       <description>&lt;p&gt;A large portion of the gameplay of &lt;em&gt;The Forest&lt;/em&gt; will take place on a hex grid akin to board games like &lt;em&gt;Terraforming Mars&lt;/em&gt;, &lt;em&gt;Gloomhaven&lt;/em&gt;, and &lt;em&gt;1861: The Railways of the Russian Empire&lt;/em&gt;&lt;sup id=&quot;fnref:railways&quot;&gt;&lt;a href=&quot;#fn:railways&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;. The majority of the board will be tiles that are never interacted with; these will just display some trees and will help give a sense of scale to the area. The remainder will be interactive tiles that can be flipped over to chart your course through the woods. In my head, I assumed I’d need to render each tile manually by looping through every column and every row and drawing the tile with a bit of offset on each row so they stack neatly. It turns out that SpriteKit already has this covered for us with &lt;code class=&quot;highlighter-rouge&quot;&gt;SKTileMapNode&lt;/code&gt;.&lt;/p&gt;
 
 &lt;p&gt;The idea behind the &lt;code class=&quot;highlighter-rouge&quot;&gt;SKTileMapNode&lt;/code&gt; is to draw background maps akin to something you’d see in the 2D Zelda games. For example, you might have some grass that turns into a desert and has a river running through. This would typically be generated in advance and Apple provides a way to create these kinds of maps using the SpriteKit Scene Editor within Xcode&lt;sup id=&quot;fnref:wysiwyg&quot;&gt;&lt;a href=&quot;#fn:wysiwyg&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;. They also provide a way to procedurally generate maps if you want to create something randomised including adjacency rules so you can specify complex ideas like how a shoreline should work&lt;sup id=&quot;fnref:hackingtilemap&quot;&gt;&lt;a href=&quot;#fn:hackingtilemap&quot; class=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
