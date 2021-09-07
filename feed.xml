@@ -8,8 +8,8 @@
     <atom:link href="https://dodogames.io/feed.xml" rel="self" type="application/rss+xml" />
     <description>Indie games for iPhone, iPad, and Apple TV</description>
     <language>en-gb</language>
-    <pubDate>Tue, 07 Sep 2021 15:46:08 +0100</pubDate>
-    <lastBuildDate>Tue, 07 Sep 2021 15:46:08 +0100</lastBuildDate>
+    <pubDate>Tue, 07 Sep 2021 21:14:17 +0100</pubDate>
+    <lastBuildDate>Tue, 07 Sep 2021 21:14:17 +0100</lastBuildDate>
 
     
     <item>
@@ -20,7 +20,7 @@
       <pubDate>Tue, 24 Aug 2021 12:30:00 +0100</pubDate>
       <author>ben@bendodson.com (Ben Dodson)</author>
       <guid>https://dodogames.io/devlog/path-generation/</guid>
-      <description>&lt;p&gt;One of the key parts of &lt;em&gt;The Forest&lt;/em&gt; is the gradual exploration of the dense woods that make up the game board. Typically your character will start in a clearing and then you’ll be able to navigate along roads and paths to the next adjacent hex. The first step (after &lt;a href=&quot;/devlog/building-a-hex-grid-with-spritekit/&quot;&gt;generating the background&lt;/a&gt;) is to choose where the player starts, work out where the player needs to get to, and then create a random path from point A to point B. This is called “path generation” and is something I’ve been focused on for the last week or so.&lt;/p&gt;
+      <description>&lt;p&gt;One of the key parts of &lt;em&gt;The Forest&lt;/em&gt; is the gradual exploration of the dense woods that make up the game board. Typically your character will start in a clearing and then you’ll be able to navigate along roads and paths to the next adjacent hex. The first step (after &lt;a href=&quot;/devlog/building-a-hex-grid-with-SpriteKit/&quot;&gt;generating the background&lt;/a&gt;) is to choose where the player starts, work out where the player needs to get to, and then create a random path from point A to point B. This is called “path generation” and is something I’ve been focused on for the last week or so.&lt;/p&gt;
 
 &lt;p&gt;To begin with, I have a scenario JSON file which will dictate the fixed elements of the current scenario. It looks something like this presently:&lt;/p&gt;
 
